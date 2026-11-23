@@ -1,17 +1,40 @@
+using System.Globalization;
+using aw_s4t1.Models;
+using Microsoft.AspNetCore.Localization;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+var cn = builder.Configuration.GetConnectionString("FerreteriaDbContext");
+
+builder.Services.AddDbContext<FerreteriaDbContext>(options =>
+    options.UseSqlServer(cn));
+
+
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+  
     app.UseHsts();
 }
+
+
+var cultura = new CultureInfo("es-EC");
+cultura.NumberFormat.NumberDecimalSeparator = ".";
+cultura.NumberFormat.NumberGroupSeparator = ",";
+cultura.NumberFormat.CurrencyDecimalSeparator = ".";
+cultura.NumberFormat.CurrencyGroupSeparator = ",";
+app.UseRequestLocalization(new RequestLocalizationOptions
+{
+    DefaultRequestCulture = new RequestCulture(cultura),
+    SupportedCultures = new[] { cultura },
+    SupportedUICultures = new[] { cultura }
+});
 
 app.UseHttpsRedirection();
 app.UseRouting();

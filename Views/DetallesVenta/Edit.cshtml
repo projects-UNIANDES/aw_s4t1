@@ -1,0 +1,89 @@
+@model aw_s4t1.Models.DetalleVenta
+
+@{
+    ViewData["Title"] = "Editar Detalle de Venta";
+}
+
+<h1>Editar Detalle de Venta</h1>
+
+<h4>Detalle de Venta</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Id" />
+            <div class="form-group">
+                <label asp-for="VentaId" class="control-label"></label>
+                <select asp-for="VentaId" class="form-control" asp-items="ViewBag.VentaId">
+                    <option value="">-- Seleccione --</option>
+                </select>
+                <span asp-validation-for="VentaId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ProductoId" class="control-label"></label>
+                <select asp-for="ProductoId" class="form-control" asp-items="ViewBag.ProductoId">
+                    <option value="">-- Seleccione --</option>
+                </select>
+                <span asp-validation-for="ProductoId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Cantidad" class="control-label"></label>
+                <input asp-for="Cantidad" class="form-control" />
+                <span asp-validation-for="Cantidad" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Descuento" class="control-label"></label>
+                <input asp-for="Descuento" class="form-control" />
+                <span asp-validation-for="Descuento" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label for="precioUnitario" class="control-label">@Html.DisplayNameFor(model => model.PrecioUnitario)</label>
+                <input id="precioUnitario" class="form-control bg-body-secondary" readonly tabindex="-1" />
+                <small class="form-text text-muted">Se conserva el precio de la venta; si cambia el producto, se toma su precio actual.</small>
+            </div>
+            <div class="form-group">
+                <label for="total" class="control-label">Total</label>
+                <input id="total" class="form-control bg-body-secondary fw-bold" readonly tabindex="-1" />
+                <small class="form-text text-muted">Cantidad × precio unitario, menos el descuento.</small>
+            </div>
+            <div class="form-group mt-3">
+                <input type="submit" value="Guardar" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Regresar a la lista</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        const precios = @Json.Serialize(ViewData["PreciosProductos"]);
+        const productoOriginal = "@Model.ProductoId";
+        const precioOriginal = @Json.Serialize(Model.PrecioUnitario);
+        const producto = document.getElementById("ProductoId");
+        const cantidad = document.getElementById("Cantidad");
+        const descuento = document.getElementById("Descuento");
+        const precio = document.getElementById("precioUnitario");
+        const total = document.getElementById("total");
+
+        function actualizar() {
+            const valor = producto.value === productoOriginal ? precioOriginal : precios[producto.value];
+            const unidades = parseInt(cantidad.value, 10);
+            const porcentaje = descuento.value === "" ? 0 : Number(descuento.value);
+            const descuentoValido = porcentaje >= 0 && porcentaje <= 100;
+            precio.value = valor !== undefined ? Number(valor).toFixed(2) : "";
+            total.value = valor !== undefined && unidades > 0 && descuentoValido
+                ? (Number(valor) * unidades * (1 - porcentaje / 100)).toFixed(2)
+                : "";
+        }
+
+        producto.addEventListener("change", actualizar);
+        cantidad.addEventListener("input", actualizar);
+        descuento.addEventListener("input", actualizar);
+        actualizar();
+    </script>
+}
